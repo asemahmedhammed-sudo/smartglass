@@ -1,7 +1,9 @@
 // lib/screens/navigation_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import '../core/location_models_and_service.dart';
+import '../services/accessibility_service.dart';
 import 'path_creation_screen.dart';
 
 class NavigationScreen extends StatefulWidget {
@@ -13,6 +15,7 @@ class NavigationScreen extends StatefulWidget {
 
 class _NavigationScreenState extends State<NavigationScreen> {
   final LocationService _locationService = LocationService();
+  final AccessibilityService _accessibilityService = AccessibilityService();
 
   SavedLocation? _currentSubLocation;
   SavedLocation? _targetSubLocation;
@@ -21,7 +24,6 @@ class _NavigationScreenState extends State<NavigationScreen> {
 
   List<MovementPath> _availablePaths = [];
   List<SavedLocation> _allSubLocations = [];
-  List<SavedLocation> _mainLocations = [];
 
   bool _isLoading = true;
   int _currentStepIndex = 0;
@@ -50,7 +52,6 @@ class _NavigationScreenState extends State<NavigationScreen> {
       }
 
       setState(() {
-        _mainLocations = allMainLocations;
         _allSubLocations = subLocs;
         _availablePaths = allPaths;
         _gpsCheckResult = null;
@@ -413,9 +414,16 @@ class _NavigationScreenState extends State<NavigationScreen> {
     }
 
     if (_gpsCheckResult != null && _gpsCheckResult!['distance'] != null) {
-      final distance = _gpsCheckResult!['distance'] as double;
-      final isClose = _gpsCheckResult!['isClose'] as bool;
-      final currentCoords = _gpsCheckResult!['currentCoords'] as Coordinates;
+      final distance = (_gpsCheckResult!['distance'] as num?)?.toDouble() ?? 0.0;
+      final isClose = _gpsCheckResult!['isClose'] as bool? ?? false;
+      final currentCoords = _gpsCheckResult!['currentCoords'] as Coordinates?;
+
+      if (currentCoords == null) {
+        return const Padding(
+          padding: EdgeInsets.only(top: 15.0),
+          child: Text('خطأ: لم يتم العثور على إحداثيات GPS', style: TextStyle(color: Colors.red)),
+        );
+      }
 
       return Card(
         margin: const EdgeInsets.only(top: 15),
@@ -537,7 +545,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
                 labelText: 'اختر من القائمة',
                 border: OutlineInputBorder(),
               ),
-              value: location,
+              initialValue: location,
               onChanged: enabled ? onChanged : null,
               items: items.map((loc) => DropdownMenuItem<SavedLocation>(
                 value: loc,
@@ -566,7 +574,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
               labelText: 'اختر المسار المفضل',
               border: OutlineInputBorder(),
             ),
-            value: _selectedPath,
+            initialValue: _selectedPath,
             onChanged: (path) {
               setState(() {
                 _selectedPath = path;

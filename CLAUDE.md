@@ -18,6 +18,7 @@ flutter run
 ```
 
 ### Running on specific devices
+
 ```bash
 # Android
 flutter run -d android

@@ -280,7 +280,7 @@ class _PathCreationScreenState extends State<PathCreationScreen> {
               child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
             ) : null,
           ),
-          value: value,
+          initialValue: value,
           onChanged: isDetecting ? null : onChanged,
           items: items.map<DropdownMenuItem<SavedLocation>>((SavedLocation loc) {
             return DropdownMenuItem<SavedLocation>(

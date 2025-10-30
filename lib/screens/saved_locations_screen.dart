@@ -257,9 +257,13 @@ class _LocationFormDialogState extends State<LocationFormDialog> {
       _latController.text = coords.latitude.toString();
       _longController.text = coords.longitude.toString();
 
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم جلب الموقع الحالي بنجاح!')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم جلب الموقع الحالي بنجاح!')));
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ في جلب الموقع: ${e.toString().split(':').last.trim()}')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ في جلب الموقع: ${e.toString().split(':').last.trim()}')));
+      }
     } finally {
       if(mounted) {
         setState(() => _isFetchingLocation = false);
@@ -272,6 +276,14 @@ class _LocationFormDialogState extends State<LocationFormDialog> {
       final name = _nameController.text;
       final latitude = double.tryParse(_latController.text) ?? 0.0;
       final longitude = double.tryParse(_longController.text) ?? 0.0;
+
+      // Validate coordinates are not zero
+      if (latitude == 0.0 && longitude == 0.0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('خطأ: الإحداثيات غير صالحة. الرجاء جلب الموقع باستخدام GPS'), backgroundColor: Colors.red),
+        );
+        return;
+      }
 
       final resultLocation = SavedLocation(
         id: widget.location?.id ?? 'temp',

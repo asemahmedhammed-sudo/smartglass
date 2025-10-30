@@ -51,7 +51,7 @@ class SavedLocation {
       coordinates: Coordinates.fromJson(json['coordinates'] as Map<String, dynamic>),
       subLocations: (json['subLocations'] as List<dynamic>?)
           ?.map((e) => SavedLocation.fromJson(e as Map<String, dynamic>))
-          .toList(),
+          .toList() ?? [],
     );
   }
 
@@ -202,7 +202,12 @@ class LocationService {
       throw Exception('تم رفض صلاحية الموقع بشكل دائم. يرجى تفعيلها يدوياً.');
     }
 
-    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    Position position = await Geolocator.getCurrentPosition(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 0,
+      ),
+    );
     return Coordinates(position.latitude, position.longitude);
   }
 }
